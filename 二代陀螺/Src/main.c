@@ -148,7 +148,7 @@ int main(void)
     remote_control_init();
     usart1_tx_dma_init();
   /* USER CODE END 2 */
-
+	
   /* Call init function for freertos objects (in freertos.c) */
   MX_FREERTOS_Init();
 

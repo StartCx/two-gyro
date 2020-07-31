@@ -24,7 +24,7 @@
   @endverbatim
   ****************************(C) COPYRIGHT 2019 DJI****************************
   */
-
+#include "bsp_laser.h"
 #include "gimbal_task.h"
 
 #include "main.h"
@@ -324,7 +324,7 @@ void gimbal_task(void const *pvParameters)
     gimbal_init(&gimbal_control);
     //shoot init
     //射击初始化
-   
+   laser_on();
     //wait for all motor online
     //判断电机是否都上线
     while (toe_is_error(YAW_GIMBAL_MOTOR_TOE) || toe_is_error(PITCH_GIMBAL_MOTOR_TOE))

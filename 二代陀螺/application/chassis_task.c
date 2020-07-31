@@ -406,10 +406,10 @@ void chassis_rc_to_control_vector(fp32 *vx_set, fp32 *vy_set, chassis_move_t *ch
     rc_deadband_limit(chassis_move_rc_to_vector->chassis_RC->rc.ch[CHASSIS_Y_CHANNEL], vy_channel, CHASSIS_RC_DEADLINE);
 
     vx_set_channel = vx_channel * CHASSIS_VX_RC_SEN;
-    vy_set_channel = vy_channel * -CHASSIS_VY_RC_SEN;
+    vy_set_channel = vy_channel * CHASSIS_VY_RC_SEN;
 
     vx_backup=vx_set_channel*arm_cos_f32(chassis_move.chassis_yaw_motor->relative_angle)+vy_set_channel*arm_sin_f32(chassis_move.chassis_yaw_motor->relative_angle);
-	vy_backup=-vx_set_channel*arm_sin_f32(chassis_move.chassis_yaw_motor->relative_angle)+vy_set_channel*arm_cos_f32(chassis_move.chassis_yaw_motor->relative_angle);
+	vy_backup=vx_set_channel*arm_sin_f32(chassis_move.chassis_yaw_motor->relative_angle)-vy_set_channel*arm_cos_f32(chassis_move.chassis_yaw_motor->relative_angle);
 	
 	vx_set_channel=vx_backup;
 	vy_set_channel=vy_backup;
@@ -533,9 +533,9 @@ static void chassis_vector_to_mecanum_wheel_speed(const fp32 vx_set, const fp32 
 {
     //because the gimbal is in front of chassis, when chassis rotates, wheel 0 and wheel 1 should be slower and wheel 2 and wheel 3 should be faster
     //旋转的时候， 由于云台靠前，所以是前面两轮 0 ，1 旋转的速度变慢， 后面两轮 2,3 旋转的速度变快
-    wheel_speed[0] = -vx_set - vy_set + (CHASSIS_WZ_SET_SCALE - 1.0f) * MOTOR_DISTANCE_TO_CENTER * wz_set;
-    wheel_speed[1] = vx_set - vy_set + (CHASSIS_WZ_SET_SCALE - 1.0f) * MOTOR_DISTANCE_TO_CENTER * wz_set;
-    wheel_speed[2] = vx_set + vy_set + (-CHASSIS_WZ_SET_SCALE - 1.0f) * MOTOR_DISTANCE_TO_CENTER * wz_set;
+    wheel_speed[0] = -vx_set - vy_set + ( CHASSIS_WZ_SET_SCALE - 1.0f) * MOTOR_DISTANCE_TO_CENTER * wz_set;
+    wheel_speed[1] =  vx_set - vy_set + ( CHASSIS_WZ_SET_SCALE - 1.0f) * MOTOR_DISTANCE_TO_CENTER * wz_set;
+    wheel_speed[2] =  vx_set + vy_set + (-CHASSIS_WZ_SET_SCALE - 1.0f) * MOTOR_DISTANCE_TO_CENTER * wz_set;
     wheel_speed[3] = -vx_set + vy_set + (-CHASSIS_WZ_SET_SCALE - 1.0f) * MOTOR_DISTANCE_TO_CENTER * wz_set;
 }
 
@@ -568,6 +568,10 @@ static void chassis_control_loop(chassis_move_t *chassis_move_control_loop)
         
         for (i = 0; i < 4; i++)
         {
+			if(i==0)
+			{
+				chassis_move_control_loop->motor_chassis[0].give_current = (int16_t)(wheel_speed[0]);
+			}
             chassis_move_control_loop->motor_chassis[i].give_current = (int16_t)(wheel_speed[i]);
         }
         //in raw mode, derectly return
